@@ -9,7 +9,7 @@
 -module(erls_utils).
 -compile([export_all]).
 
-comma_separate([H | []]) ->
+comma_separate([H]) ->
     H;
 comma_separate(List) ->
     lists:foldl(fun(String, Acc) ->

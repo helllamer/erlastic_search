@@ -31,7 +31,20 @@ create_index(Index) ->
 %% @end
 %%--------------------------------------------------------------------
 create_index(Params, Index) ->
-    erls_resource:put(Params, Index, [], [], [], []).
+    create_index_json1(Params, Index, []).
+
+create_index_json(Index, IndexSettings) ->
+    create_index_json(#erls_params{}, Index, IndexSettings).
+
+create_index_json(Params, Index, IndexSettings) when is_tuple(IndexSettings) ->
+    ReqBody = mochijson2:encode(IndexSettings),
+    create_index_json(Params, Index, ReqBody);
+%% эта кляуза нужна на случай, если передан готовый JSON в виде бинаря или iolist.
+create_index_json(Params, Index, ReqBody) ->
+    create_index_json1(Params, Index, ReqBody).
+
+create_index_json1(Params, Index, ReqBody) ->
+    erls_resource:put(Params, Index, [], [], ReqBody, []).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -42,7 +55,7 @@ create_index(Params, Index) ->
 %% @spec index(Index, Type, Doc) -> {ok, Data} | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-index_doc(Index, Type, Doc) when is_tuple(Doc) ->
+index_doc(Index, Type, Doc) ->
     index_doc(#erls_params{}, Index, Type, Doc).
 
 %%--------------------------------------------------------------------
@@ -56,6 +69,9 @@ index_doc(Index, Type, Doc) when is_tuple(Doc) ->
 %%--------------------------------------------------------------------
 index_doc(Params, Index, Type, Doc) when is_tuple(Doc) ->
     Json = mochijson2:encode(Doc),
+    index_doc(Params, Index, Type, Json);
+index_doc(Params, Index, Type, Json) ->
+    %io:format("~p:~p: ~p~n", [?MODULE, ?LINE, iolist_to_binary(Json)]),
     erls_resource:post(Params, filename:join(Index, Type), [], [], Json, []).
 
 %%--------------------------------------------------------------------
@@ -146,7 +162,26 @@ search(Params, Index=[H|_T], Type=[H2|_T2], Query, Opts) when is_list(H), not is
 search(Params, Index=[H|_T], Type=[H2|_T2], Query, Opts) when not is_list(H), not is_list(H2) ->
     search(Params, [Index], [Type], Query, Opts);
 search(Params, Index, Type, Query, Opts) ->
-    erls_resource:get(Params, filename:join([erls_utils:comma_separate(Index), Type, "_search"]), [], [{"q", Query}]++Opts, []).
+    Path = filename:join([Index, Type, "_search"]),
+    erls_resource:get(Params, Path, [], [{"q", Query}|Opts], []).
+
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Takes the index and type name and a query mochijson struct {struct, ...} and sends
+%% it to the Elastic Search server specified in request body.
+%%
+%% @spec search(Params, Index, Type, Query) -> {ok, Data} | {error, Error}
+%% @end
+%%--------------------------------------------------------------------
+search_json(Index, Type, QueryJson) ->
+    search_json(#erls_params{}, Index, Type, QueryJson).
+search_json(Params, Index, Type, QueryJson) ->
+    Json = mochijson2:encode(QueryJson),
+    io:format("~p:~p: ~p ~p ~n~p~n", [?MODULE, ?LINE, Index, Type, iolist_to_binary(Json)]),
+    Path = filename:join([Index, Type, "_search"]),
+    erls_resource:get(Params, Path, [], [], Json, []).
+
 
 %%--------------------------------------------------------------------
 %% @doc
