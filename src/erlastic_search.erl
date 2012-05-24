@@ -31,20 +31,23 @@ create_index(Index) ->
 %% @end
 %%--------------------------------------------------------------------
 create_index(Params, Index) ->
-    create_index_json1(Params, Index, []).
+    erls_resource:put(Params, Index, [], [], [], []).
 
-create_index_json(Index, IndexSettings) ->
-    create_index_json(#erls_params{}, Index, IndexSettings).
 
-create_index_json(Params, Index, IndexSettings) when is_tuple(IndexSettings) ->
-    ReqBody = mochijson2:encode(IndexSettings),
-    create_index_json(Params, Index, ReqBody);
-%% эта кляуза нужна на случай, если передан готовый JSON в виде бинаря или iolist.
-create_index_json(Params, Index, ReqBody) ->
-    create_index_json1(Params, Index, ReqBody).
+%%--------------------------------------------------------------------
+%% @doc Set mappings for index and type.
+%% @spec set_index_mapping(Index, Type, Mappings) -> {ok, Data} | {error, Error}
+%%--------------------------------------------------------------------
+set_index_mapping(Index, Type, Mappings) ->
+    set_index_mapping(#erls_params{}, Index, Type, Mappings).
 
-create_index_json1(Params, Index, ReqBody) ->
-    erls_resource:put(Params, Index, [], [], ReqBody, []).
+set_index_mapping(Params, Index, Type, MappingsMochijson) when is_tuple(MappingsMochijson) ->
+    MappingsJson = mochijson2:encode(MappingsMochijson),
+    set_index_mapping(Params, Index, Type, MappingsJson);
+set_index_mapping(Params, Index, Type, MappingsJson) ->
+    Path = filename:join([Index, Type, "_mappings"]),
+    erls_resource:put(Params, Path, [], [], MappingsJson, []).
+
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -176,11 +179,17 @@ search(Params, Index, Type, Query, Opts) ->
 %%--------------------------------------------------------------------
 search_json(Index, Type, QueryJson) ->
     search_json(#erls_params{}, Index, Type, QueryJson).
+
+search_mochijson(Index, Type, QueryMochijson) ->
+    search_mochijson(#erls_params{}, Index, Type, QueryMochijson).
+
+search_mochijson(Params, Index, Type, QueryMochijson) ->
+    Json = mochijson2:encode(QueryMochijson),
+    search_json(Params, Index, Type, Json).
+
 search_json(Params, Index, Type, QueryJson) ->
-    Json = mochijson2:encode(QueryJson),
-    io:format("~p:~p: ~p ~p ~n~p~n", [?MODULE, ?LINE, Index, Type, iolist_to_binary(Json)]),
     Path = filename:join([Index, Type, "_search"]),
-    erls_resource:get(Params, Path, [], [], Json, []).
+    erls_resource:get(Params, Path, [], [], QueryJson, []).
 
 
 %%--------------------------------------------------------------------

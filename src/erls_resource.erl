@@ -23,7 +23,7 @@
          }).
 
 get(State, Path, Headers, Params, Opts) ->
-    request(State, "GET", Path, Headers, Params, [], Opts).
+    get(State, Path, Headers, Params, [], Opts).
 
 get(State, Path, Headers, Params, Body, Opts) ->
     request(State, "GET", Path, Headers, Params, Body, Opts).
@@ -50,7 +50,7 @@ request(State, Method, Path, Headers, Params, Body, Options) ->
     %Headers1 = make_auth(State,
     %                     default_header("Content-Type", "application/json", Headers)),
     Headers1 = Headers,
-     case has_body(Method) of
+    case Body /= [] orelse Body /= <<>> orelse has_body(Method) of
          true ->
              case make_body(Body, Headers1, Options) of
                  {Headers2, Options1, InitialBody, BodyFun} ->
