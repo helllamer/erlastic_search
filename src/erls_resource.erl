@@ -98,6 +98,7 @@ make_response(#response{method=Method, status=Status, reason=Reason, body=Body})
         Status >= 400, Status == 412 ->
              {error, precondition_failed};
         Status >= 400 ->
+	     error_logger:error_msg("~p:~p: Error ~p~n~p~n", [?MODULE, ?LINE, Status, Body]),
              {error, {unknown_error, Status}};
         true ->
             if

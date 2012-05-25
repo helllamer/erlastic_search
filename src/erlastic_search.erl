@@ -149,7 +149,7 @@ search(Index, Type, Query) ->
     search(#erls_params{}, Index, Type, Query, []). 
 
 search_limit(Index, Type, Query, Limit) when is_integer(Limit) ->
-    search(#erls_params{}, Index, Type, Query, [{"size", lists:flatten(io_lib:format("~B",[Limit]))}]). 
+    search(#erls_params{}, Index, Type, Query, [{"size", integer_to_list(Limit)}]). 
 %%--------------------------------------------------------------------
 %% @doc
 %% Takes the index and type name and a query as "key:value" and sends
@@ -177,19 +177,17 @@ search(Params, Index, Type, Query, Opts) ->
 %% @spec search(Params, Index, Type, Query) -> {ok, Data} | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-search_json(Index, Type, QueryJson) ->
-    search_json(#erls_params{}, Index, Type, QueryJson).
-
 search_mochijson(Index, Type, QueryMochijson) ->
-    search_mochijson(#erls_params{}, Index, Type, QueryMochijson).
-
-search_mochijson(Params, Index, Type, QueryMochijson) ->
+    search_mochijson(Index, Type, QueryMochijson, []).
+search_mochijson(Index, Type, QueryMochijson, Qs) ->
     Json = mochijson2:encode(QueryMochijson),
-    search_json(Params, Index, Type, Json).
+    search_json(#erls_params{}, Index, Type, Json, Qs).
 
-search_json(Params, Index, Type, QueryJson) ->
-    Path = filename:join([Index, Type, "_search"]),
-    erls_resource:get(Params, Path, [], [], QueryJson, []).
+search_json(Params, Index, Type, Json) ->
+    search_json(Params, Index, Type, Json, []).
+search_json(Params, Index, Type, Json, Qs) ->
+    Path = Index ++ [$/ | Type] ++ "/_search",
+    erls_resource:get(Params, Path, [], Qs, Json, []).
 
 
 %%--------------------------------------------------------------------
