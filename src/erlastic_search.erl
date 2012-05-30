@@ -212,6 +212,16 @@ get_doc(Index, Type, Id) ->
 get_doc(Params, Index, Type, Id) ->
     erls_resource:get(Params, filename:join([Index, Type, Id]), [], [], []).
 
+
+multiget_mochijson(Index, Type, Mochijson) ->
+    multiget_mochijson(#erls_params{}, Index, Type, Mochijson).
+
+multiget_mochijson(Params, Index, Type, Mochijson) ->
+    ReqPath = Index ++ [$/|Type] ++ "/_mget",
+    ReqBody = mochijson2:encode(Mochijson),
+    erls_resource:get(Params, ReqPath, [], [], ReqBody, []).
+
+
 flush_index(Index) ->
     flush_index(#erls_params{}, Index).
 
@@ -259,4 +269,9 @@ optimize_index(Params, Index=[H|_T]) when not is_list(H)->
     optimize_index(Params, [Index]);
 optimize_index(Params, Index) ->
     erls_resource:post(Params, filename:join([erls_utils:comma_separate(Index), "_optimize"]), [], [], [], []).
+
+delete_index(Index) ->
+    delete_index(#erls_params{}, Index).
+delete_index(Params, Index) ->
+    erls_resource:delete(Params, Index, [], [], [], []).
 
