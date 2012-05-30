@@ -214,12 +214,14 @@ get_doc(Params, Index, Type, Id) ->
 
 
 multiget_mochijson(Index, Type, Mochijson) ->
-    multiget_mochijson(#erls_params{}, Index, Type, Mochijson).
+    multiget_mochijson(Index, Type, Mochijson, []).
+multiget_mochijson(Index, Type, Mochijson, Qs) ->
+    multiget_mochijson(#erls_params{}, Index, Type, Mochijson, Qs).
 
-multiget_mochijson(Params, Index, Type, Mochijson) ->
+multiget_mochijson(Params, Index, Type, Mochijson, Qs) ->
     ReqPath = Index ++ [$/|Type] ++ "/_mget",
     ReqBody = mochijson2:encode(Mochijson),
-    erls_resource:get(Params, ReqPath, [], [], ReqBody, []).
+    erls_resource:get(Params, ReqPath, [], [], ReqBody, Qs).
 
 
 flush_index(Index) ->
