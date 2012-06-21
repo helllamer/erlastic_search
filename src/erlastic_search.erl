@@ -275,5 +275,5 @@ optimize_index(Params, Index) ->
 delete_index(Index) ->
     delete_index(#erls_params{}, Index).
 delete_index(Params, Index) ->
-    erls_resource:delete(Params, Index, [], [], [], []).
+    erls_resource:delete(Params, Index, [], [], []).
 
