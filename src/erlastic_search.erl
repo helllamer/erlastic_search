@@ -33,6 +33,10 @@ create_index(Index) ->
 create_index(Params, Index) ->
     erls_resource:put(Params, Index, [], [], [], []).
 
+create_index_mochijson(Index, Mochijson) ->
+    Json = mochijson2:encode(Mochijson),
+    erls_resource:put(#erls_params{}, Index, [], [], Json, []).
+
 
 %%--------------------------------------------------------------------
 %% @doc Set mappings for index and type.
