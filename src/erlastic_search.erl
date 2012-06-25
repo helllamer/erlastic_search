@@ -203,7 +203,10 @@ search_json(Params, Index, Type, Json, Qs) ->
 %% @end
 %%--------------------------------------------------------------------
 get_doc(Index, Type, Id) ->
-    get_doc(#erls_params{}, Index, Type, Id).
+    get_doc(Index, Type, Id, []).
+
+get_doc(Index, Type, Id, Qs) ->
+    get_doc1(#erls_params{}, Index, Type, Id, Qs).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -213,8 +216,9 @@ get_doc(Index, Type, Id) ->
 %% @spec index(Params, Index, Type, Id, Doc) -> {ok, Data} | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-get_doc(Params, Index, Type, Id) ->
-    erls_resource:get(Params, filename:join([Index, Type, Id]), [], [], []).
+get_doc1(Params, Index, Type, Id, Qs) ->
+    ReqPath = filename:join([Index, Type, Id]),
+    erls_resource:get(Params, ReqPath, [], Qs, []).
 
 
 multiget_mochijson(Index, Type, Mochijson) ->
