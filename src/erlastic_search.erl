@@ -20,21 +20,9 @@
 %% @end
 %%--------------------------------------------------------------------
 create_index(Index) ->
-    create_index(#erls_params{}, Index).
+    create_index(Index, []).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Takes the name of an index and the record describing the servers
-%% details to create and sends the request to Elastic Search.
-%%
-%% @spec create_index(Params, Index) -> {ok, Data} | {error, Error}
-%% @end
-%%--------------------------------------------------------------------
-create_index(Params, Index) ->
-    erls_resource:put(Params, Index, [], [], [], []).
-
-create_index_mochijson(Index, Mochijson) ->
-    Json = mochijson2:encode(Mochijson),
+create_index(Index, Json) ->
     erls_resource:put(#erls_params{}, Index, [], [], Json, []).
 
 
@@ -63,7 +51,9 @@ set_index_mapping(Params, Index, Type, MappingsJson) ->
 %% @end
 %%--------------------------------------------------------------------
 index_doc(Index, Type, Doc) ->
-    index_doc(#erls_params{}, Index, Type, Doc).
+    index_doc(Index, Type, Doc, []).
+index_doc(Index, Type, Doc, Qs) ->
+    index_doc1(#erls_params{}, Index, Type, Doc, Qs).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -74,12 +64,13 @@ index_doc(Index, Type, Doc) ->
 %% @spec index(Params Index, Type, Doc) -> {ok, Data} | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-index_doc(Params, Index, Type, Doc) when is_tuple(Doc) ->
+index_doc1(Params, Index, Type, Doc, Qs) when is_tuple(Doc) ->
     Json = mochijson2:encode(Doc),
-    index_doc(Params, Index, Type, Json);
-index_doc(Params, Index, Type, Json) ->
+    index_doc1(Params, Index, Type, Json, Qs);
+index_doc1(Params, Index, Type, Json, Qs) ->
     %io:format("~p:~p: ~p~n", [?MODULE, ?LINE, iolist_to_binary(Json)]),
-    erls_resource:post(Params, filename:join(Index, Type), [], [], Json, []).
+    ReqPath = filename:join(Index, Type),
+    erls_resource:post(Params, ReqPath, [], Qs, Json, []).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -260,28 +251,36 @@ refresh_all() ->
 refresh_all(Params) ->
     erls_resource:post(Params, "_refresh", [], [], [], []).
 
-delete_doc(Index, Type, Id) ->
-    delete_doc(#erls_params{}, Index, Type, Id).
 
-delete_doc(Params, Index, Type, Id) ->
-    erls_resource:delete(Params, filename:join([Index, Type, Id]), [], [], []).
+delete_doc(Index, Type, Id) ->
+    delete_doc(Index, Type, Id, []).
+delete_doc(Index, Type, Id, Qs) ->
+    delete_doc1(#erls_params{}, Index, Type, Id, Qs).
+
+delete_doc1(Params, Index, Type, Id, Qs) ->
+    erls_resource:delete(Params, filename:join([Index, Type, Id]), [], Qs, []).
+
 
 delete_doc_by_query(Index, Type, Query) ->
-    delete_doc_by_query(#erls_params{}, Index, Type, Query).
+    delete_doc_by_query1(#erls_params{}, Index, Type, Query).
 
-delete_doc_by_query(Params, Index, Type, Query) ->
-    erls_resource:delete(Params, filename:join([Index, Type]), [], [{"q", Query}], []).
+delete_doc_by_query1(Params, Index, Type, Query) ->
+    ReqPath = filename:join([Index, Type]),
+    erls_resource:delete(Params, ReqPath, [], [{"q", Query}], []).
+
 
 optimize_index(Index) ->
-    optimize_index(#erls_params{}, Index).
+    optimize_index1(#erls_params{}, Index).
 
-optimize_index(Params, Index=[H|_T]) when not is_list(H)->
-    optimize_index(Params, [Index]);
-optimize_index(Params, Index) ->
+optimize_index1(Params, Index=[H|_T]) when not is_list(H)->
+    optimize_index1(Params, [Index]);
+optimize_index1(Params, Index) ->
     erls_resource:post(Params, filename:join([erls_utils:comma_separate(Index), "_optimize"]), [], [], [], []).
 
+
 delete_index(Index) ->
-    delete_index(#erls_params{}, Index).
-delete_index(Params, Index) ->
+    delete_index1(#erls_params{}, Index).
+
+delete_index1(Params, Index) ->
     erls_resource:delete(Params, Index, [], [], []).
 
