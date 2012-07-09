@@ -49,25 +49,14 @@ set_index_mapping(Index, Type, MappingsJson) ->
 %%--------------------------------------------------------------------
 index_doc(Index, Type, Doc) ->
     index_doc(Index, Type, Doc, []).
-index_doc(Index, Type, Doc, Qs) ->
-    index_doc1(#erls_params{}, Index, Type, Doc, Qs).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Takes the index and type name and a Json document described in
-%% Erlang terms, converts the document to a string and passes to the
-%% server. Elastic Search provides the doc with an id.
-%%
-%% @spec index(Params Index, Type, Doc) -> {ok, Data} | {error, Error}
-%% @end
-%%--------------------------------------------------------------------
-index_doc1(Params, Index, Type, Doc, Qs) when is_tuple(Doc) ->
+index_doc(Index, Type, Doc, Qs) when is_tuple(Doc) ->
     Json = mochijson2:encode(Doc),
-    index_doc1(Params, Index, Type, Json, Qs);
-index_doc1(Params, Index, Type, Json, Qs) ->
-    %io:format("~p:~p: ~p~n", [?MODULE, ?LINE, iolist_to_binary(Json)]),
+    index_doc(Index, Type, Json, Qs);
+index_doc(Index, Type, Json, Qs) ->
     ReqPath = filename:join(Index, Type),
-    erls_resource:post(Params, ReqPath, [], Qs, Json, []).
+    erls_resource:post(#erls_params{}, ReqPath, [], Qs, Json, []).
+
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -78,31 +67,22 @@ index_doc1(Params, Index, Type, Json, Qs) ->
 %% @spec index(Index, Type, Id, Doc) -> {ok, Data} | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
-index_doc_with_id(Index, Type, Id, Doc) when is_tuple(Doc) ->
-    index_doc_with_id(#erls_params{}, Index, Type, Id, Doc).
+index_doc_with_id(Index, Type, Id, Doc) ->
+    index_doc_with_id(Index, Type, Id, Doc, []).
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Takes the index and type name and a Json document described in
-%% Erlang terms, converts the document to a string after adding the _id field
-%% and passes to the server.
-%%
-%% @spec index(Params, Index, Type, Id, Doc) -> {ok, Data} | {error, Error}
-%% @end
-%%--------------------------------------------------------------------
-index_doc_with_id(Params, Index, Type, Id, Doc) when is_tuple(Doc) ->
-    Json = iolist_to_binary(mochijson2:encode(Doc)),
-    index_doc_with_id(Params, Index, Type, Id, Json);
+index_doc_with_id(Index, Type, Id, Doc, Qs) when is_tuple(Doc) ->
+    Json = mochijson2:encode(Doc),
+    index_doc_with_id(Index, Type, Id, Json, Qs);
+index_doc_with_id(Index, Type, Id, Json, Qs) ->
+    Id1 = mochiweb_util:quote_plus(Id),
+    Path = filename:join([Index, Type, Id1]),
+    erls_resource:post(#erls_params{}, Path, [], Qs, Json, []).
 
-index_doc_with_id(Params, Index, Type, Id, Json) when is_binary(Json) ->
-    index_doc_with_id_opts(Params, Index, Type, Id, Json, []).
 
-index_doc_with_id_opts(Params, Index, Type, Id, Json, Opts) when is_binary(Json), is_list(Opts) ->
-    erls_resource:post(Params, filename:join([Index, Type, Id]), [], Opts, Json, []).
-
-to_bin(A) when is_atom(A)   -> to_bin(atom_to_list(A));
 to_bin(L) when is_list(L)   -> list_to_binary(L);
-to_bin(B) when is_binary(B) -> B.
+to_bin(B) when is_binary(B) -> B;
+to_bin(A) when is_atom(A)   -> to_bin(atom_to_list(A)).
+
 
 %% Documents is [ {Index, Type, Id, Json}, ... ]
 bulk_index_docs(Params, IndexTypeIdJsonTuples) ->
@@ -194,21 +174,14 @@ get_doc(Index, Type, Id) ->
     get_doc(Index, Type, Id, []).
 
 get_doc(Index, Type, Id, Qs) ->
-    get_doc1(#erls_params{}, Index, Type, Id, Qs).
+    Id1 = mochiweb_util:quote_plus(Id),
+    ReqPath = filename:join([Index, Type, Id1]),
+    erls_resource:get(#erls_params{}, ReqPath, [], Qs, []).
+
 
 %%--------------------------------------------------------------------
-%% @doc
-%% Takes the index and type name and a doc id and sends
-%% it to the Elastic Search server specified in Params.
-%%
-%% @spec index(Params, Index, Type, Id, Doc) -> {ok, Data} | {error, Error}
-%% @end
+%% @doc A multiget: get plenty of documents at once.
 %%--------------------------------------------------------------------
-get_doc1(Params, Index, Type, Id, Qs) ->
-    ReqPath = filename:join([Index, Type, Id]),
-    erls_resource:get(Params, ReqPath, [], Qs, []).
-
-
 multiget_mochijson(Index, Type, Mochijson) ->
     multiget_mochijson(Index, Type, Mochijson, []).
 multiget_mochijson(Index, Type, Mochijson, Qs) ->
