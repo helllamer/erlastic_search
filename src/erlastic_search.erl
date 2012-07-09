@@ -30,15 +30,12 @@ create_index(Index, Json) ->
 %% @doc Set mappings for index and type.
 %% @spec set_index_mapping(Index, Type, Mappings) -> {ok, Data} | {error, Error}
 %%--------------------------------------------------------------------
-set_index_mapping(Index, Type, Mappings) ->
-    set_index_mapping(#erls_params{}, Index, Type, Mappings).
-
-set_index_mapping(Params, Index, Type, MappingsMochijson) when is_tuple(MappingsMochijson) ->
+set_index_mapping(Index, Type, MappingsMochijson) when is_tuple(MappingsMochijson) ->
     MappingsJson = mochijson2:encode(MappingsMochijson),
-    set_index_mapping(Params, Index, Type, MappingsJson);
-set_index_mapping(Params, Index, Type, MappingsJson) ->
-    Path = filename:join([Index, Type, "_mappings"]),
-    erls_resource:put(Params, Path, [], [], MappingsJson, []).
+    set_index_mapping(Index, Type, MappingsJson);
+set_index_mapping(Index, Type, MappingsJson) ->
+    Path = filename:join([Index, Type, "_mapping"]),
+    erls_resource:put(#erls_params{}, Path, [], [], MappingsJson, []).
 
 
 %%--------------------------------------------------------------------
