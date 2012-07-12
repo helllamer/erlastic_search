@@ -225,18 +225,14 @@ refresh_all(Params) ->
 delete_doc(Index, Type, Id) ->
     delete_doc(Index, Type, Id, []).
 delete_doc(Index, Type, Id, Qs) ->
-    delete_doc1(#erls_params{}, Index, Type, Id, Qs).
-
-delete_doc1(Params, Index, Type, Id, Qs) ->
-    erls_resource:delete(Params, filename:join([Index, Type, Id]), [], Qs, []).
+    Id1 = mochiweb_util:quote_plus(Id),
+    Path = Index ++ [$/ | Type] ++ [$/ | Id1],
+    erls_resource:delete(#erls_params{}, Path, [], Qs, []).
 
 
 delete_doc_by_query(Index, Type, Query) ->
-    delete_doc_by_query1(#erls_params{}, Index, Type, Query).
-
-delete_doc_by_query1(Params, Index, Type, Query) ->
     ReqPath = filename:join([Index, Type]),
-    erls_resource:delete(Params, ReqPath, [], [{"q", Query}], []).
+    erls_resource:delete(#erls_params{}, ReqPath, [], [{"q", Query}], []).
 
 
 optimize_index(Index) ->
@@ -249,8 +245,5 @@ optimize_index1(Params, Index) ->
 
 
 delete_index(Index) ->
-    delete_index1(#erls_params{}, Index).
-
-delete_index1(Params, Index) ->
-    erls_resource:delete(Params, Index, [], [], []).
+    erls_resource:delete(#erls_params{}, Index, [], [], []).
 
