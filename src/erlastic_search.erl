@@ -185,41 +185,33 @@ get_doc(Index, Type, Id, Qs) ->
 multiget_mochijson(Index, Type, Mochijson) ->
     multiget_mochijson(Index, Type, Mochijson, []).
 multiget_mochijson(Index, Type, Mochijson, Qs) ->
-    multiget_mochijson(#erls_params{}, Index, Type, Mochijson, Qs).
-
-multiget_mochijson(Params, Index, Type, Mochijson, Qs) ->
     ReqPath = Index ++ [$/|Type] ++ "/_mget",
     ReqBody = erls_utils:json_encode(Mochijson),
-    erls_resource:get(Params, ReqPath, [], Qs, ReqBody, []).
+    erls_resource:get(#erls_params{}, ReqPath, [], Qs, ReqBody, []).
 
 
 flush_index(Index) ->
-    flush_index(#erls_params{}, Index).
-
-flush_index(Params, Index=[H|_T]) when not is_list(H) ->
-    flush_index(Params, [Index]);
-flush_index(Params, Index) ->
-    erls_resource:post(Params, filename:join([erls_utils:comma_separate(Index), "_flush"]), [], [], [], []).
+    flush_index(Index, false).
+flush_index(Index, IsRefresh) ->
+    Qs = case IsRefresh of
+	false -> [];
+	true  -> [{"refresh", "true"}]
+    end,
+    erls_resource:post(#erls_params{}, Index ++ "/_flush", [], Qs, [], []).
 
 flush_all() ->
-    refresh_all(#erls_params{}).
+    refresh_all().
 
 flush_all(Params) ->
     erls_resource:post(Params, "_flush", [], [], [], []).
 
-refresh_index(Index) ->
-    refresh_index(#erls_params{}, Index).
 
-refresh_index(Params, Index=[H|_T]) when not is_list(H) ->
-    refresh_index(Params, [Index]);
-refresh_index(Params, Index) ->
-    erls_resource:post(Params, filename:join([erls_utils:comma_separate(Index), "_refresh"]), [], [], [], []).
+refresh_index(Index) ->
+    erls_resource:post(#erls_params{}, Index ++ "/_refresh", [], [], [], []).
+
 
 refresh_all() ->
-    refresh_all(#erls_params{}).
-
-refresh_all(Params) ->
-    erls_resource:post(Params, "_refresh", [], [], [], []).
+    erls_resource:post(#erls_params{}, "_refresh", [], [], [], []).
 
 
 delete_doc(Index, Type, Id) ->
@@ -236,12 +228,7 @@ delete_doc_by_query(Index, Type, Query) ->
 
 
 optimize_index(Index) ->
-    optimize_index1(#erls_params{}, Index).
-
-optimize_index1(Params, Index=[H|_T]) when not is_list(H)->
-    optimize_index1(Params, [Index]);
-optimize_index1(Params, Index) ->
-    erls_resource:post(Params, filename:join([erls_utils:comma_separate(Index), "_optimize"]), [], [], [], []).
+    erls_resource:post(#erls_params{}, Index ++ "/_optimize", [], [], [], []).
 
 
 delete_index(Index) ->
