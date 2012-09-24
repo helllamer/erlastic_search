@@ -31,7 +31,7 @@ create_index(Index, Json) ->
 %% @spec set_index_mapping(Index, Type, Mappings) -> {ok, Data} | {error, Error}
 %%--------------------------------------------------------------------
 set_index_mapping(Index, Type, MappingsMochijson) when is_tuple(MappingsMochijson) ->
-    MappingsJson = mochijson2:encode(MappingsMochijson),
+    MappingsJson = erls_utils:json_encode(MappingsMochijson),
     set_index_mapping(Index, Type, MappingsJson);
 set_index_mapping(Index, Type, MappingsJson) ->
     Path = filename:join([Index, Type, "_mapping"]),
@@ -51,7 +51,7 @@ index_doc(Index, Type, Doc) ->
     index_doc(Index, Type, Doc, []).
 
 index_doc(Index, Type, Doc, Qs) when is_tuple(Doc) ->
-    Json = mochijson2:encode(Doc),
+    Json = erls_utils:json_encode(Doc),
     index_doc(Index, Type, Json, Qs);
 index_doc(Index, Type, Json, Qs) ->
     ReqPath = filename:join(Index, Type),
@@ -71,7 +71,7 @@ index_doc_with_id(Index, Type, Id, Doc) ->
     index_doc_with_id(Index, Type, Id, Doc, []).
 
 index_doc_with_id(Index, Type, Id, Doc, Qs) when is_tuple(Doc) ->
-    Json = mochijson2:encode(Doc),
+    Json = erls_utils:json_encode(Doc),
     index_doc_with_id(Index, Type, Id, Json, Qs);
 index_doc_with_id(Index, Type, Id, Json, Qs) ->
     Id1 = mochiweb_util:quote_plus(Id),
@@ -87,7 +87,7 @@ to_bin(A) when is_atom(A)   -> to_bin(atom_to_list(A)).
 %% Documents is [ {Index, Type, Id, Json}, ... ]
 bulk_index_docs(Params, IndexTypeIdJsonTuples) ->
     Body = lists:map(fun({Index, Type, Id, Json}) ->
-         Header = mochijson2:encode({struct, [
+         Header = erls_utils:json_encode({struct, [
                                               {<<"index">>, [ {struct, [
                                                                         {<<"_index">>, to_bin(Index)},
                                                                         {<<"_type">>, to_bin(Type)},
@@ -152,7 +152,7 @@ search(Params, Index, Type, Query, Opts) ->
 search_mochijson(Index, Type, QueryMochijson) ->
     search_mochijson(Index, Type, QueryMochijson, []).
 search_mochijson(Index, Type, QueryMochijson, Qs) ->
-    Json = mochijson2:encode(QueryMochijson),
+    Json = erls_utils:json_encode(QueryMochijson),
     search_json(#erls_params{}, Index, Type, Json, Qs).
 
 search_json(Params, Index, Type, Json) ->
@@ -189,7 +189,7 @@ multiget_mochijson(Index, Type, Mochijson, Qs) ->
 
 multiget_mochijson(Params, Index, Type, Mochijson, Qs) ->
     ReqPath = Index ++ [$/|Type] ++ "/_mget",
-    ReqBody = mochijson2:encode(Mochijson),
+    ReqBody = erls_utils:json_encode(Mochijson),
     erls_resource:get(Params, ReqPath, [], Qs, ReqBody, []).
 
 
