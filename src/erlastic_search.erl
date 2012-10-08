@@ -234,3 +234,8 @@ optimize_index(Index) ->
 delete_index(Index) ->
     erls_resource:delete(#erls_params{}, Index, [], [], []).
 
+
+set_index_settings(Index, Settings) ->
+    SettingsJson = erls_utils:json_encode(Settings),
+    erls_resource:put(#erls_params{}, Index ++ "/_settings", [], [], SettingsJson, []). 
+
