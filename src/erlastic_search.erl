@@ -162,6 +162,13 @@ search_json(Params, Index, Type, Json, Qs) ->
     erls_resource:get(Params, Path, [], Qs, Json, []).
 
 
+%% To create empty-body search-request:
+match_all(Index, Type, Qs) ->
+    ReqBody = [],
+    Path = Index ++ [$/ | Type] ++ "/_search",
+    erls_resource:get(#erls_params{}, Path, [], Qs, ReqBody, []).
+
+
 %%--------------------------------------------------------------------
 %% @doc
 %% Takes the index and type name and a doc id and sends
