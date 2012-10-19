@@ -91,11 +91,11 @@ do_request(#erls_params{host=Host, port=Port, ssl=Ssl, timeout=Timeout},
 
 make_response(#response{method=Method, status=Status, reason=Reason, body=Body}) ->
     if
-        Status >= 400, Status == 404 ->
+        Status == 404 ->
             {error, not_found};
-        Status >= 400, Status == 409 ->
+        Status == 409 ->
              {error, conflict};
-        Status >= 400, Status == 412 ->
+        Status == 412 ->
              {error, precondition_failed};
         Status >= 400 ->
 	     %error_logger:error_msg("~p:~p: Error ~p: ~400P~n", [?MODULE, ?LINE, Status, Body, 16]),

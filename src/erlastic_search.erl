@@ -246,3 +246,10 @@ set_index_settings(Index, Settings) ->
     SettingsJson = erls_utils:json_encode(Settings),
     erls_resource:put(#erls_params{}, Index ++ "/_settings", [], [], SettingsJson, []). 
 
+
+is_index_exist(Index) ->
+    case erls_resource:head(#erls_params{}, Index, [], [], []) of
+	{ok, _}	    -> true;
+	{error, _}  -> false
+    end.
+
