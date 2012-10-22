@@ -253,3 +253,10 @@ is_index_exist(Index) ->
 	{error, _}  -> false
     end.
 
+
+%% @doc Create alias name for index. http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases.html
+%% Mochijson list of actions is passed as first argument.
+index_aliases_update(ReqMochijson) ->
+    ReqJson = erls_utils:json_encode(ReqMochijson),
+    erls_resource:post(#erls_params{}, "_aliases", [], [], ReqJson, []).
+
