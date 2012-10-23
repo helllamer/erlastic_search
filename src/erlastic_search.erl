@@ -260,3 +260,14 @@ index_aliases_update(ReqMochijson) ->
     ReqJson = erls_utils:json_encode(ReqMochijson),
     erls_resource:post(#erls_params{}, "_aliases", [], [], ReqJson, []).
 
+
+%% @doc get status for index or all indexes: http://www.elasticsearch.org/guide/reference/api/admin-indices-status.html
+status() ->
+    erls_resource:get(#erls_params{}, "_status", [], [], []).
+
+status(Index) when is_binary(Index) ->
+    status(binary_to_list(Index));
+status(Index) ->
+    ReqPath = Index ++ "/_status",
+    erls_resource:get(#erls_params{}, ReqPath, [], [], []).
+
