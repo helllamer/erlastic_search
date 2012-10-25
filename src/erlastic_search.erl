@@ -235,7 +235,12 @@ delete_doc_by_query(Index, Type, Query) ->
 
 
 optimize_index(Index) ->
-    erls_resource:post(#erls_params{}, Index ++ "/_optimize", [], [], [], []).
+    optimize_index(Index, []).
+
+optimize_index(Index, MaxNumSegments) when is_integer(MaxNumSegments) ->
+    optimize_index(Index, [{"max_num_segments", integer_to_list(MaxNumSegments)}]);
+optimize_index(Index, Qs) ->
+    erls_resource:post(#erls_params{}, Index ++ "/_optimize", [], Qs, [], []).
 
 
 delete_index(Index) ->
@@ -270,4 +275,9 @@ status(Index) when is_binary(Index) ->
 status(Index) ->
     ReqPath = Index ++ "/_status",
     erls_resource:get(#erls_params{}, ReqPath, [], [], []).
+
+%% @doc request es. site root. It is used to ensure, that elasticsearch is running.
+%% @spec about() -> {ok, AboutJson} | {error, term()}.
+about() ->
+    erls_resource:get(#erls_params{}, "/", [], [], []).
 
