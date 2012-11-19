@@ -265,6 +265,14 @@ index_aliases_update(ReqMochijson) ->
     ReqJson = erls_utils:json_encode(ReqMochijson),
     erls_resource:post(#erls_params{}, "_aliases", [], [], ReqJson, []).
 
+%% @doc update doc with script or using partial document update (es-0.20+)
+update_doc(Index, Type, Id, Mochijson) ->
+    update_doc(Index, Type, Id, Mochijson, []).
+update_doc(Index, Type, Id, Mochijson, Qs) ->
+    Id1 = mochiweb_util:quote_plus(Id),
+    ReqPath = Index ++ [$/ | Type] ++ [$/ | Id1] ++ "/_update",
+    Json = erls_utils:json_encode(Mochijson),
+    erls_resource:post(#erls_params{}, ReqPath, [], Qs, Json, []).
 
 %% @doc get status for index or all indexes: http://www.elasticsearch.org/guide/reference/api/admin-indices-status.html
 status() ->
