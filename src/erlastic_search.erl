@@ -289,3 +289,14 @@ status(Index) ->
 about() ->
     erls_resource:get(#erls_params{}, "/", [], [], []).
 
+
+%% @doc Put index template.
+%% @spec set_index_template(Name::string(), mochijson()) -> {ok, term()} | {error, term()}.
+set_index_template(Name, Mochijson) when is_list(Name) ->
+    Json = erls_utils:json_encode(Mochijson),
+    ReqPath = "_template/" ++ Name,
+    case erls_resource:put(#erls_params{}, ReqPath, [], [], Json, []) of
+	{ok, _} -> ok;
+	E	-> E
+    end.
+
