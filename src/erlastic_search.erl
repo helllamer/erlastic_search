@@ -37,6 +37,17 @@ set_index_mapping(Index, Type, MappingsJson) ->
     Path = filename:join([Index, Type, "_mapping"]),
     erls_resource:put(#erls_params{}, Path, [], [], MappingsJson, []).
 
+%%--------------------------------------------------------------------
+%% @doc Delete index mapping (delete index type).
+%% @spec delete_index_mapping(Index::string(), Type::string()) -> ok | {error, term()}.
+%%--------------------------------------------------------------------
+delete_index_mapping([_|_]=Index, [_|_]=Type) ->
+    ReqPath = Index ++ [$/ | Type],
+    case erls_resource:delete(#erls_params{}, ReqPath, [], [], []) of
+	{ok, _} -> ok;
+	Else	-> Else
+    end.
+
 
 %%--------------------------------------------------------------------
 %% @doc
