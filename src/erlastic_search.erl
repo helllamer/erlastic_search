@@ -311,3 +311,18 @@ set_index_template(Name, Mochijson) when is_list(Name) ->
 	E	-> E
     end.
 
+
+count_all() ->
+    count1("").
+count_index([_|_] = IndexName) ->
+    count1(IndexName).
+count_type([_|_] = IndexName, IndexType) when is_integer(hd(IndexType)) ->
+    count1(IndexName ++ [$/ | IndexType]).
+
+count1(ReqPath) ->
+    ReqPath1 = case ReqPath of
+	"" -> "_count";
+	_  -> ReqPath ++ "/_count"
+    end,
+    erls_resource:get(#erls_params{}, ReqPath1, [], [], []).
+
