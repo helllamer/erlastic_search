@@ -312,6 +312,7 @@ set_index_template(Name, Mochijson) when is_list(Name) ->
     end.
 
 
+%% @doc Several count functions: count across all cluster shards, index shards and in type.
 count_all() ->
     count1("").
 count_index([_|_] = IndexName) ->
@@ -320,9 +321,15 @@ count_type([_|_] = IndexName, IndexType) when is_integer(hd(IndexType)) ->
     count1(IndexName ++ [$/ | IndexType]).
 
 count1(ReqPath) ->
+    ReqPath0 = "_count",
     ReqPath1 = case ReqPath of
-	"" -> "_count";
-	_  -> ReqPath ++ "/_count"
+	"" -> ReqPath0;
+	_  -> ReqPath ++ [$/|ReqPath0]
     end,
     erls_resource:get(#erls_params{}, ReqPath1, [], [], []).
+
+
+%% @doc Just show nodes.
+nodes() ->
+    erls_resource:get(#erls_params{}, "_nodes", [], [], []).
 
